@@ -287,7 +287,7 @@ services:
       - ${APPCONFIG_DIR}/QBittorrent:/config
       - ${MEDIA_DIR}/Downloads/Torrents:/downloads #optional
     ports:
-      - 8585:8080
+      - 8080:8080
       - 6882:6881
       - 6882:6881/udp
     labels:
