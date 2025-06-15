@@ -68,6 +68,10 @@ services:
       - NET_ADMIN
     ports:
       - 9696:9696
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "prowlarr"
+      tsdproxy.container_port: "9696"
     devices:
       - /dev/net/tun:/dev/net/tun
     volumes:
@@ -120,10 +124,6 @@ services:
       - ${APPCONFIG_DIR}/Prowlarr/Logs:/data/Logs
     # ports:
     #   - 9696:9696
-    labels:
-      tsdproxy.enable: "true"
-      tsdproxy.name: "prowlarr"
-      tsdproxy.container_port: "9696"
     restart: unless-stopped
     depends_on:
       - gluetun
