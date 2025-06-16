@@ -307,6 +307,10 @@ services:
       - ${MEDIA_DIR}/Media:/data
     ports:
       - 25600:25600
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "komga"
+      tsdproxy.container_port: "25600"
     environment:
       - PUID=568
       - PGID=568
@@ -329,6 +333,10 @@ services:
       - TZ=${TZ}
       # optional jvm options. Example config for low memory usage. Runs guaranteed cleanup up every 3600000ms(1hour)
       - JAVA_TOOL_OPTIONS=-XX:+UnlockExperimentalVMOptions -XX:+UseShenandoahGC -XX:ShenandoahGCHeuristics=compact -XX:ShenandoahGuaranteedGCInterval=3600000 -XX:TrimNativeHeapInterval=3600000
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "komf"
+      tsdproxy.container_port: "8085"
     volumes:
       - ${APPCONFIG_DIR}/Komf/config:/config #path to directory with application.yml and database file
     restart: unless-stopped
