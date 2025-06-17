@@ -373,7 +373,7 @@ services:
       - PGID=568
       - TZ=${TZ}
     volumes:
-      - ${MEDIA_DIR}/Config/Mylar3:/config
+      - ${APPCONFIG_DIR}/Mylar3:/config
       - ${MEDIA_DIR}/Media/Movies:/comics
       - ${MEDIA_DIR}/Downloads:/downloads
     ports:
