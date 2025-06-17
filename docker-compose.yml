@@ -364,3 +364,25 @@ services:
     networks:
       servarrnetwork:
         ipv4_address: 172.18.0.17
+
+  mylar3:
+    image: lscr.io/linuxserver/mylar3:latest
+    container_name: mylar3
+    environment:
+      - PUID=568
+      - PGID=568
+      - TZ=${TZ}
+    volumes:
+      - ${MEDIA_DIR}/Config/Mylar3:/config
+      - ${MEDIA_DIR}/Media/Movies:/comics
+      - ${MEDIA_DIR}/Downloads:/downloads
+    ports:
+      - 8595:8090
+    networks:
+      servarrnetwork:
+        ipv4_address: 172.18.0.18
+    restart: unless-stopped
+    labels:
+      - tsdproxy.enable=true
+      - tsdproxy.name="mylar3"
+      - tsdproxy.container_port=8090
