@@ -51,8 +51,8 @@ networks:
 # - 4567:4567
 # Komf: 172.18.0.16
 # - 8085:8085
-# Ombi: 172.18.0.17
-# - 3579:3579
+# Kavita: 172.18.0.17
+# - 5000:5000
 # QBittorrent: 172.18.0.20
 # - 8080:8080
 # - 6882:6881
@@ -344,3 +344,23 @@ services:
       servarrnetwork:
         ipv4_address: 172.18.0.16
 
+  kavita:
+    image: lscr.io/linuxserver/kavita:latest
+    container_name: kavita
+    environment:
+      - PUID=568
+      - PGID=568
+      - TZ=${TZ}
+    volumes:
+      - ${APPCONFIG_DIR}/Kavita/config:/config
+      - ${MEDIA_DIR}/Media:/data #optional
+    ports:
+      - 5000:5000
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "kavita"
+      tsdproxy.container_port: "5000"
+    restart: unless-stopped
+    networks:
+      servarrnetwork:
+        ipv4_address: 172.18.0.17
