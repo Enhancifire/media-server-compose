@@ -8,6 +8,8 @@ networks:
       config:
         - subnet: 172.18.0.0/24
 
+volumes:
+  kapowarr-db:
 
 # Mount Path:
 ## App Data: ${APPCONFIG_DIR}
@@ -386,3 +388,23 @@ services:
       - tsdproxy.enable=true
       - tsdproxy.name="mylar3"
       - tsdproxy.container_port=8090
+
+
+  kapowarr:
+    container_name: kapowarr
+    image: mrcas/kapowarr:latest
+    volumes:
+      - "kapowarr-db:/app/db"
+      - "${MEDIA_DIR}/Downloads:/app/temp_downloads"
+      - "${MEDIA_DIR}/Media/Comics:/comics-1"
+    ports:
+      - 5656:5656
+    restart: unless-stopped
+    environment:
+      - PUID=568
+      - PGID=568
+      - TZ=${TZ}
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "kapowarr"
+      tsdproxy.container_port: "5656"
