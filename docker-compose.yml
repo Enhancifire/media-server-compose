@@ -326,7 +326,7 @@ services:
     image: sndxr/komf:latest
     container_name: komf
     ports:
-      - "8085:8085"
+      - "8482:8085"
     environment:
       - PUID=568
       - PGID=568
