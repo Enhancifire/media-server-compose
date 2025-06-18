@@ -376,7 +376,7 @@ services:
       - TZ=${TZ}
     volumes:
       - ${APPCONFIG_DIR}/Mylar3:/config
-      - ${MEDIA_DIR}/Media/Movies:/comics
+      - ${MEDIA_DIR}/Media/Comics:/comics
       - ${MEDIA_DIR}/Downloads:/downloads
     ports:
       - 8595:8090
