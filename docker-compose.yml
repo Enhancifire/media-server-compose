@@ -323,50 +323,7 @@ services:
       servarrnetwork:
         ipv4_address: 172.18.0.14
 
-    
-  komf:
-    image: sndxr/komf:latest
-    container_name: komf
-    ports:
-      - "8558:8085"
-    environment:
-      - PUID=568
-      - PGID=568
-      - TZ=${TZ}
-      # optional jvm options. Example config for low memory usage. Runs guaranteed cleanup up every 3600000ms(1hour)
-      - JAVA_TOOL_OPTIONS=-XX:+UnlockExperimentalVMOptions -XX:+UseShenandoahGC -XX:ShenandoahGCHeuristics=compact -XX:ShenandoahGuaranteedGCInterval=3600000 -XX:TrimNativeHeapInterval=3600000
-    labels:
-      tsdproxy.enable: "true"
-      tsdproxy.name: "komf"
-      tsdproxy.container_port: "8085"
-    volumes:
-      - ${APPCONFIG_DIR}/Komf/config:/config #path to directory with application.yml and database file
-    restart: unless-stopped
-    networks:
-      servarrnetwork:
-        ipv4_address: 172.18.0.16
-
-  kavita:
-    image: lscr.io/linuxserver/kavita:latest
-    container_name: kavita
-    environment:
-      - PUID=568
-      - PGID=568
-      - TZ=${TZ}
-    volumes:
-      - ${APPCONFIG_DIR}/Kavita/config:/config
-      - ${MEDIA_DIR}/Media:/data #optional
-    ports:
-      - 5000:5000
-    labels:
-      tsdproxy.enable: "true"
-      tsdproxy.name: "kavita"
-      tsdproxy.container_port: "5000"
-    restart: unless-stopped
-    networks:
-      servarrnetwork:
-        ipv4_address: 172.18.0.17
-
+  
   mylar3:
     image: lscr.io/linuxserver/mylar3:latest
     container_name: mylar3
