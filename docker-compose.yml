@@ -3,37 +3,14 @@ networks:
   tsdproxy_net:
     external: true
     name: tsdproxy_net
-  servarrnetwork:
-    ipam:
-      config:
-        - subnet: 172.18.0.0/24
 
-volumes:
-  kapowarr-db:
-
+# Media Server Compose for TrueNAS Stack
 # Mount Path:
 ## App Data: ${APPCONFIG_DIR}
 ## Media path: ${MEDIA_DIR}/Media
 ## Downloads path: ${MEDIA_DIR}/Downloads
 
 # Ports and IP
-# Gluetun: 172.18.0.2
-# - 9696:9696
-# Sonarr: 172.18.0.3
-# - 8989:8989
-# Radarr: 172.18.0.4
-# - 7878:7878
-# Lidarr: 172.18.0.5
-# - 8686:8686
-# Bazarr: 172.18.0.6
-# - 6767:6767
-# Filebrowser: 172.18.0.7
-# - 8778:80
-# Deluge: 172.18.0.8
-# - 8112:8112
-# - 6881:6881
-# - 6881:6881/udp
-# - 58846:58846
 # Jellyfin: 172.18.0.9
 # - 8096:8096
 # - 8920:8920 #optional
@@ -41,195 +18,16 @@ volumes:
 # - 1900:1900/udp #optional
 # Jellyseerr: 172.18.0.10
 # - 5055:5055
-# Readarr: 172.18.0.11
-# - 8787:8787
-# Calibre-Web: 172.18.0.12
-# - 8083:8083
-# Animesonarr: 172.18.0.13
-# - 8999:8989
 # Komga: 172.18.0.14
 # - 25600:25600
 # Suwayomi: 172.18.0.15
 # - 4567:4567
-# Komf: 172.18.0.16
-# - 8085:8085
-# Kavita: 172.18.0.17
-# - 5000:5000
 # QBittorrent: 172.18.0.20
 # - 8080:8080
 # - 6882:6881
 # - 6882:6881/udp
-# Byparr: 172.18.0.21
-# - 8191:8191
 
 services:
-  gluetun:
-    image: qmcgaw/gluetun
-    container_name: gluetun
-    cap_add:
-      - NET_ADMIN
-    ports:
-      - 9696:9696
-    labels:
-      tsdproxy.enable: "true"
-      tsdproxy.name: "prowlarr"
-      tsdproxy.container_port: "9696"
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    volumes:
-      - ${APPCONFIG_DIR}/Gluetun:/gluetun
-    networks:
-      servarrnetwork:
-        ipv4_address: 172.18.0.2
-    
-    environment:
-      - PUID=568
-      - PGID=568
-      - VPN_SERVICE_PROVIDER=protonvpn
-      - VPN_TYPE=openvpn
-      - OPENVPN_USER=${OPENVPN_USER}
-      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
-      # - SERVER_HOSTNAME=node-us-93.protonvpn.net
-      - SERVER_COUNTRIES=Romania,Japan
-      - FREE_ONLY=on
-
-    restart: unless-stopped
-
-  byparr:
-    image: ghcr.io/thephaseless/byparr:latest
-    container_name: byparr
-    environment:
-      - PUID=568
-      - PGID=568
-      - TZ=${TZ}
-    ports:
-      - "8192:8191"
-    labels:
-      tsdproxy.enable: "true"
-      tsdproxy.name: "byparr"
-      tsdproxy.container_port: "8191"
-    restart: unless-stopped
-    networks:
-      servarrnetwork:
-        ipv4_address: 172.18.0.21
-
-  prowlarr:
-    image: lscr.io/linuxserver/prowlarr:latest
-    container_name: prowlarr
-    environment:
-      - PUID=568
-      - PGID=568
-      - TZ=${TZ}
-    volumes:
-      - ${APPCONFIG_DIR}/Prowlarr/Config:/config
-      - ${APPCONFIG_DIR}/Prowlarr/Backup:/data/Backup
-      - ${APPCONFIG_DIR}/Prowlarr/Logs:/data/Logs
-    # ports:
-    #   - 9696:9696
-    restart: unless-stopped
-    depends_on:
-      - gluetun
-    network_mode: service:gluetun
-
-  radarr:
-    image: lscr.io/linuxserver/radarr:latest
-    container_name: radarr
-    environment:
-      - PUID=568
-      - PGID=568
-      - TZ=${TZ}
-    labels:
-      tsdproxy.enable: "true"
-      tsdproxy.name: "radarr"
-      tsdproxy.container_port: "7878"
-    volumes:
-      - ${APPCONFIG_DIR}/Radarr/Config:/config
-      - ${APPCONFIG_DIR}/Radarr/Backup:/data/Backup
-      - ${MEDIA_DIR}/Media/Movies:/data/movies #optional
-      - ${MEDIA_DIR}/Downloads/Torrents:/data/torrents #optional
-      - ${MEDIA_DIR}/Downloads/Usenet:/data/usenet #optional
-      # - /mnt/SSD/Apps/Radarr\Scripts\custom-cont-init.d:/custom-cont-init.d
-      # - /mnt/SSD/Apps/Radarr\Scripts\custom-services.d:/custom-services.d
-    ports:
-      - 7878:7878
-    restart: unless-stopped
-    networks:
-      servarrnetwork:
-        ipv4_address: 172.18.0.4
-
-  sonarr:
-    image: lscr.io/linuxserver/sonarr:latest
-    container_name: sonarr
-    environment:
-      - PUID=568
-      - PGID=568
-      - TZ=${TZ}
-    labels:
-      tsdproxy.enable: "true"
-      tsdproxy.name: "sonarr"
-      tsdproxy.container_port: "8989"
-    volumes:
-      - ${APPCONFIG_DIR}/Sonarr/Config:/config
-      - ${APPCONFIG_DIR}/Sonarr/Backup:/data/Backup
-      - ${MEDIA_DIR}/Media/Series:/data/shows #optional
-      - ${MEDIA_DIR}/Downloads/Torrents:/data/torrents
-      - ${MEDIA_DIR}/Downloads/Usenet:/data/usenet #optional
-      # - /mnt/SSD/Apps/Sonarr\Scripts\custom-cont-init.d:/custom-cont-init.d
-      # - /mnt/SSD/Apps/Sonarr\Scripts\custom-services.d:/custom-services.d
-    ports:
-      - 8989:8989
-    restart: unless-stopped
-    networks:
-      servarrnetwork:
-        ipv4_address: 172.18.0.3
-  animesonarr:
-    image: lscr.io/linuxserver/sonarr:latest
-    container_name: animesonarr
-    environment:
-      - PUID=568
-      - PGID=568
-      - TZ=${TZ}
-    labels:
-      tsdproxy.enable: "true"
-      tsdproxy.name: "animesonarr"
-      tsdproxy.container_port: "8989"
-    volumes:
-      - ${APPCONFIG_DIR}/AnimeSonarr/Config:/config
-      - ${APPCONFIG_DIR}/AnimeSonarr/Backup:/data/Backup
-      - ${MEDIA_DIR}/Media/Anime:/data/anime #optional
-      - ${MEDIA_DIR}/Downloads/Torrents:/data/torrents
-      - ${MEDIA_DIR}/Downloads/Usenet:/data/usenet #optional
-      # - ${APPCONFIG_DIR}/AnimeSonarr\Scripts\custom-cont-init.d:/custom-cont-init.d
-      # - ${APPCONFIG_DIR}/AnimeSonarr\Scripts\custom-services.d:/custom-services.d
-    ports:
-      - 8999:8989
-    restart: unless-stopped
-    networks:
-      servarrnetwork:
-        ipv4_address: 172.18.0.13
-
-  bazarr:
-    image: lscr.io/linuxserver/bazarr:latest
-    container_name: bazarr
-    restart: unless-stopped
-    environment:
-      - PUID=568
-      - PGID=568
-      - TZ=${TZ}
-    labels:
-      tsdproxy.enable: "true"
-      tsdproxy.name: "bazarr"
-      tsdproxy.container_port: "6767"
-    volumes:
-      - ${APPCONFIG_DIR}/Bazarr:/config
-      - ${MEDIA_DIR}:/data
-    ports:
-      - 6767:6767
-    networks:
-      servarrnetwork:
-        ipv4_address: 172.18.0.6
-
-
   jellyfin:
     image: lscr.io/linuxserver/jellyfin:latest
     container_name: jellyfin
@@ -251,9 +49,6 @@ services:
       - 7359:7359/udp #optional
       - 1900:1900/udp #optional
     restart: unless-stopped
-    networks:
-      servarrnetwork:
-        ipv4_address: 172.18.0.9
 
   jellyseerr:
     image: ghcr.io/fallenbagel/jellyseerr:latest
@@ -272,9 +67,6 @@ services:
     volumes:
       - ${APPCONFIG_DIR}/Jellyseerr:/app/config
     restart: unless-stopped
-    networks:
-      servarrnetwork:
-        ipv4_address: 172.18.0.10
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
@@ -297,9 +89,6 @@ services:
       tsdproxy.name: "qbittorrent"
       tsdproxy.container_port: "8080"
     restart: unless-stopped
-    networks:
-      servarrnetwork:
-        ipv4_address: 172.18.0.20
 
   komga:
     image: ghcr.io/gotson/komga:latest
@@ -319,49 +108,3 @@ services:
       - TZ=${TZ}
       - JAVA_TOOL_OPTIONS=-Xmx1g
     restart: unless-stopped
-    networks:
-      servarrnetwork:
-        ipv4_address: 172.18.0.14
-
-  
-  mylar3:
-    image: lscr.io/linuxserver/mylar3:latest
-    container_name: mylar3
-    environment:
-      - PUID=568
-      - PGID=568
-      - TZ=${TZ}
-    volumes:
-      - ${APPCONFIG_DIR}/Mylar3:/config
-      - ${MEDIA_DIR}/Media/Comics:/comics
-      - ${MEDIA_DIR}/Downloads:/downloads
-    ports:
-      - 8595:8090
-    networks:
-      servarrnetwork:
-        ipv4_address: 172.18.0.18
-    restart: unless-stopped
-    labels:
-      - tsdproxy.enable=true
-      - tsdproxy.name="mylar3"
-      - tsdproxy.container_port=8090
-
-
-  kapowarr:
-    container_name: kapowarr
-    image: mrcas/kapowarr:latest
-    volumes:
-      - "kapowarr-db:/app/db"
-      - "${MEDIA_DIR}/Downloads:/app/temp_downloads"
-      - "${MEDIA_DIR}/Media/Comics:/comics-1"
-    ports:
-      - 5656:5656
-    restart: unless-stopped
-    environment:
-      - PUID=568
-      - PGID=568
-      - TZ=${TZ}
-    labels:
-      tsdproxy.enable: "true"
-      tsdproxy.name: "kapowarr"
-      tsdproxy.container_port: "5656"
