@@ -35,7 +35,7 @@ services:
       - PUID=568
       - PGID=568
       - TZ=${TZ}
-      - JELLYFIN_PublishedServerUrl=http://192.168.0.5 #optional
+      # - JELLYFIN_PublishedServerUrl=http://192.168.0.5 #optional
     volumes:
       - ${APPCONFIG_DIR}/Jellyfin:/config
       - ${MEDIA_DIR}/Media:/data/media
@@ -108,3 +108,21 @@ services:
       - TZ=${TZ}
       - JAVA_TOOL_OPTIONS=-Xmx1g
     restart: unless-stopped
+
+  kavita:
+      image: jvmilazz0/kavita:latest    # Using the stable branch from the official dockerhub repo.
+      container_name: kavita
+      volumes:
+          - ${MEDIA_DIR}/Media:/data
+          - ${APPCONFIG_DIR}/Kavita/config:/kavita/config     # /kavita/config must not be changed
+      environment:
+          - TZ=${TZ}
+          - PUID=568
+          - PGID=568
+      labels:
+          tsdproxy.enable: "true"
+          tsdproxy.name: "kavita"
+          tsdproxy.container_port: "5000"
+      ports:
+          - "5000:5000"
+      restart: unless-stopped
