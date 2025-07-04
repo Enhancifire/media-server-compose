@@ -265,8 +265,8 @@ services:
     #   tsdproxy.name: "shoko"
     #   tsdproxy.container_port: "8111"
     environment:
-      - PUID=568
-      - PGID=568
+      - PUID=0
+      - PGID=0
       - TZ=${TZ}
     # ports:
     #   - "8111:8111"
@@ -404,3 +404,11 @@ services:
     depends_on:
       tailscale-cwa:
         condition: service_healthy
+
+# volumes:
+#   media_dir:
+#     driver: local
+#     driver_opts:
+#       type: none
+#       device: ${MEDIA_DIR}
+#       o: bind
