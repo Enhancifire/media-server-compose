@@ -171,8 +171,8 @@ services:
       - PGID=568
       #- TS_ACCEPT_DNS=true # Uncomment when using MagicDNS
     volumes:
-      - ${APPCONFIG_DIR}/CWA/ts-config:/config # Config folder used to store Tailscale files - you may need to change the path
-      - ${APPCONFIG_DIR}/CWA/ts/state:/var/lib/tailscale # Tailscale requirement - you may need to change the path
+      - ${APPCONFIG_DIR}/QBittorrent/ts-config:/config # Config folder used to store Tailscale files - you may need to change the path
+      - ${APPCONFIG_DIR}/QBittorrent/ts/state:/var/lib/tailscale # Tailscale requirement - you may need to change the path
     devices:
       - /dev/net/tun:/dev/net/tun # Network configuration for Tailscale to work
     cap_add:
