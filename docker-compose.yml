@@ -265,14 +265,14 @@ services:
     #   tsdproxy.name: "shoko"
     #   tsdproxy.container_port: "8111"
     environment:
-      - "PUID=568"
-      - "PGID=568"
-      - "TZ=${TZ}"
+      - PUID=568
+      - PGID=568
+      - TZ=${TZ}
     # ports:
     #   - "8111:8111"
     volumes:
       - "${APPCONFIG_DIR}/Shoko:/home/shoko/.shoko"
-      - "${MEDIA_DIR}/Media:/mnt/media"
+      - "${MEDIA_DIR}:/mnt/media"
     network_mode: service:tailscale-shoko # Sidecar configuration to route Jellyfin through Tailscale
     depends_on:
       tailscale-shoko:
