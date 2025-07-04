@@ -28,6 +28,8 @@ networks:
 # - 6882:6881/udp
 
 services:
+
+########################## JELLYFIN AND TAILSCALE ##########################
   jellyfin:
     image: lscr.io/linuxserver/jellyfin:latest
     container_name: jellyfin
@@ -39,12 +41,12 @@ services:
     volumes:
       - ${APPCONFIG_DIR}/Jellyfin:/config
       - ${MEDIA_DIR}/Media:/data/media
-    labels:
-      tsdproxy.enable: "true"
-      tsdproxy.name: "jellyfin"
-      tsdproxy.container_port: "8096"
-    network_mode: service:tailscale-jellyfin # Sidecar configuration to route Jellyfin through Tailscale
+    # labels:
+    #   tsdproxy.enable: "true"
+    #   tsdproxy.name: "jellyfin"
+    #   tsdproxy.container_port: "8096"
     restart: unless-stopped
+    network_mode: service:tailscale-jellyfin # Sidecar configuration to route Jellyfin through Tailscale
     depends_on:
       tailscale-jellyfin:
         condition: service_healthy
@@ -89,6 +91,7 @@ services:
       start_period: 10s # Time to wait before starting health checks
     restart: always
 
+########################## JELLYSEERR AND TAILSCALE ##########################
   jellyseerr:
     image: ghcr.io/fallenbagel/jellyseerr:latest
     container_name: jellyseerr
@@ -97,15 +100,58 @@ services:
       - PGID=568
       - LOG_LEVEL=debug
       - TZ=${TZ}
-    labels:
-      tsdproxy.enable: "true"
-      tsdproxy.name: "jellyseerr"
-      tsdproxy.container_port: "5055"
-    ports:
-      - 5055:5055
+    # labels:
+    #   tsdproxy.enable: "true"
+    #   tsdproxy.name: "jellyseerr"
+    #   tsdproxy.container_port: "5055"
+    # ports:
+    #   - 5055:5055
     volumes:
       - ${APPCONFIG_DIR}/Jellyseerr:/app/config
     restart: unless-stopped
+    network_mode: service:tailscale-jellyseerr # Sidecar configuration to route Jellyfin through Tailscale
+    depends_on:
+      tailscale-jellyseerr:
+        condition: service_healthy
+
+  tailscale-jellyseerr:
+    image: tailscale/tailscale:latest # Image to be used
+    container_name: tailscale-jellyseerr # Name for local container management
+    hostname: jellyseerr # Name used within your Tailscale environment
+    ports:
+      - 5055:5055
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_SERVE_CONFIG=/config/serve.json # Tailsacale Serve configuration to expose the web interface on your local Tailnet - remove this line if not required
+      - TS_USERSPACE=false
+      - TS_ENABLE_HEALTH_CHECK=true              # Enable healthcheck endpoint: "/healthz"
+      - TS_LOCAL_ADDR_PORT=127.0.0.1:41234       # The <addr>:<port> for the healthz endpoint
+      - PUID=568
+      - PGID=568
+      #- TS_ACCEPT_DNS=true # Uncomment when using MagicDNS
+    volumes:
+      - ${APPCONFIG_DIR}/Jellyseerr/ts-config:/config # Config folder used to store Tailscale files - you may need to change the path
+      - ${APPCONFIG_DIR}/Jellyseerr/ts/state:/var/lib/tailscale # Tailscale requirement - you may need to change the path
+    devices:
+      - /dev/net/tun:/dev/net/tun # Network configuration for Tailscale to work
+    cap_add:
+      - net_admin # Tailscale requirement
+      - sys_module # Tailscale requirement
+    #ports:
+    #  - 0.0.0.0:${SERVICEPORT}:${SERVICEPORT} # Binding port ${SERVICE}PORT to the local network - may be removed if only exposure to your Tailnet is required
+    # If any DNS issues arise, use your preferred DNS provider by uncommenting the config below
+    # dns: 
+    #   - ${DNS_SERVER}
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:41234/healthz"] # Check Tailscale has a Tailnet IP and is operational
+      interval: 1m # How often to perform the check
+      timeout: 10s # Time to wait for the check to succeed
+      retries: 3 # Number of retries before marking as unhealthy
+      start_period: 10s # Time to wait before starting health checks
+    restart: always
+
+#################### QBITTORRENT AND TAILSCALE #####################
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
@@ -129,26 +175,69 @@ services:
       tsdproxy.container_port: "8080"
     restart: unless-stopped
 
+######################### SHOKO AND TAILSCALE #########################
   shoko_server:
     shm_size: 256m
     container_name: shoko_server
     image: ghcr.io/shokoanime/server:latest
     restart: always
-    labels:
-      tsdproxy.enable: "true"
-      tsdproxy.name: "shoko"
-      tsdproxy.container_port: "8111"
+    # labels:
+    #   tsdproxy.enable: "true"
+    #   tsdproxy.name: "shoko"
+    #   tsdproxy.container_port: "8111"
     environment:
       - "PUID=568"
       - "PGID=568"
       - "TZ=${TZ}"
-    ports:
-      - "8111:8111"
+    # ports:
+    #   - "8111:8111"
     volumes:
       - "${APPCONFIG_DIR}/Shoko:/home/shoko/.shoko"
       - "${MEDIA_DIR}/Media/Anime:/mnt/anime-shows"
       - "${MEDIA_DIR}/Media/Anime Movies:/mnt/anime-movies"
+    network_mode: service:tailscale-shoko # Sidecar configuration to route Jellyfin through Tailscale
+    depends_on:
+      tailscale-shoko:
+        condition: service_healthy
 
+  tailscale-shoko:
+    image: tailscale/tailscale:latest # Image to be used
+    container_name: tailscale-shoko # Name for local container management
+    hostname: shoko # Name used within your Tailscale environment
+    ports:
+      - "8111:8111"
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_SERVE_CONFIG=/config/serve.json # Tailsacale Serve configuration to expose the web interface on your local Tailnet - remove this line if not required
+      - TS_USERSPACE=false
+      - TS_ENABLE_HEALTH_CHECK=true              # Enable healthcheck endpoint: "/healthz"
+      - TS_LOCAL_ADDR_PORT=127.0.0.1:41234       # The <addr>:<port> for the healthz endpoint
+      - PUID=568
+      - PGID=568
+      #- TS_ACCEPT_DNS=true # Uncomment when using MagicDNS
+    volumes:
+      - ${APPCONFIG_DIR}/Shoko/ts-config:/config # Config folder used to store Tailscale files - you may need to change the path
+      - ${APPCONFIG_DIR}/Shoko/ts/state:/var/lib/tailscale # Tailscale requirement - you may need to change the path
+    devices:
+      - /dev/net/tun:/dev/net/tun # Network configuration for Tailscale to work
+    cap_add:
+      - net_admin # Tailscale requirement
+      - sys_module # Tailscale requirement
+    #ports:
+    #  - 0.0.0.0:${SERVICEPORT}:${SERVICEPORT} # Binding port ${SERVICE}PORT to the local network - may be removed if only exposure to your Tailnet is required
+    # If any DNS issues arise, use your preferred DNS provider by uncommenting the config below
+    # dns: 
+    #   - ${DNS_SERVER}
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:41234/healthz"] # Check Tailscale has a Tailnet IP and is operational
+      interval: 1m # How often to perform the check
+      timeout: 10s # Time to wait for the check to succeed
+      retries: 3 # Number of retries before marking as unhealthy
+      start_period: 10s # Time to wait before starting health checks
+    restart: always
+
+######################### KAVITA AND TAILSCALE #########################
   kavita:
       image: jvmilazz0/kavita:latest    # Using the stable branch from the official dockerhub repo.
       container_name: kavita
@@ -167,6 +256,7 @@ services:
           - "5000:5000"
       restart: unless-stopped
 
+######################### CWA AND TAILSCALE #########################
   calibre-web-automated:
     image: crocodilestick/calibre-web-automated:latest
     container_name: calibre-web-automated
