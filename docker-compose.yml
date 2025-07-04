@@ -230,8 +230,7 @@ services:
     #   - "8111:8111"
     volumes:
       - "${APPCONFIG_DIR}/Shoko:/home/shoko/.shoko"
-      - "${MEDIA_DIR}/Media/Anime:/mnt/anime-shows"
-      - "${MEDIA_DIR}/Media/Anime Movies:/mnt/anime-movies"
+      - "${MEDIA_DIR}/Media:/mnt/media"
     network_mode: service:tailscale-shoko # Sidecar configuration to route Jellyfin through Tailscale
     depends_on:
       tailscale-shoko:
