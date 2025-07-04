@@ -92,28 +92,6 @@ services:
     restart: always
 
 ########################## JELLYSEERR AND TAILSCALE ##########################
-  jellyseerr:
-    image: ghcr.io/fallenbagel/jellyseerr:latest
-    container_name: jellyseerr
-    environment:
-      - PUID=568
-      - PGID=568
-      - LOG_LEVEL=debug
-      - TZ=${TZ}
-    # labels:
-    #   tsdproxy.enable: "true"
-    #   tsdproxy.name: "jellyseerr"
-    #   tsdproxy.container_port: "5055"
-    # ports:
-    #   - 5055:5055
-    volumes:
-      - ${APPCONFIG_DIR}/Jellyseerr:/app/config
-    restart: unless-stopped
-    network_mode: service:tailscale-jellyseerr # Sidecar configuration to route Jellyfin through Tailscale
-    depends_on:
-      tailscale-jellyseerr:
-        condition: service_healthy
-
   tailscale-jellyseerr:
     image: tailscale/tailscale:latest # Image to be used
     container_name: tailscale-jellyseerr # Name for local container management
@@ -151,6 +129,28 @@ services:
       start_period: 10s # Time to wait before starting health checks
     restart: always
 
+  jellyseerr:
+    image: ghcr.io/fallenbagel/jellyseerr:latest
+    container_name: jellyseerr
+    environment:
+      - PUID=568
+      - PGID=568
+      - LOG_LEVEL=debug
+      - TZ=${TZ}
+    # labels:
+    #   tsdproxy.enable: "true"
+    #   tsdproxy.name: "jellyseerr"
+    #   tsdproxy.container_port: "5055"
+    # ports:
+    #   - 5055:5055
+    volumes:
+      - ${APPCONFIG_DIR}/Jellyseerr:/app/config
+    restart: unless-stopped
+    network_mode: service:tailscale-jellyseerr # Sidecar configuration to route Jellyfin through Tailscale
+    depends_on:
+      tailscale-jellyseerr:
+        condition: service_healthy
+
 #################### QBITTORRENT AND TAILSCALE #####################
 
   qbittorrent:
@@ -176,30 +176,6 @@ services:
     restart: unless-stopped
 
 ######################### SHOKO AND TAILSCALE #########################
-  shoko_server:
-    shm_size: 256m
-    container_name: shoko_server
-    image: ghcr.io/shokoanime/server:latest
-    restart: always
-    # labels:
-    #   tsdproxy.enable: "true"
-    #   tsdproxy.name: "shoko"
-    #   tsdproxy.container_port: "8111"
-    environment:
-      - "PUID=568"
-      - "PGID=568"
-      - "TZ=${TZ}"
-    # ports:
-    #   - "8111:8111"
-    volumes:
-      - "${APPCONFIG_DIR}/Shoko:/home/shoko/.shoko"
-      - "${MEDIA_DIR}/Media/Anime:/mnt/anime-shows"
-      - "${MEDIA_DIR}/Media/Anime Movies:/mnt/anime-movies"
-    network_mode: service:tailscale-shoko # Sidecar configuration to route Jellyfin through Tailscale
-    depends_on:
-      tailscale-shoko:
-        condition: service_healthy
-
   tailscale-shoko:
     image: tailscale/tailscale:latest # Image to be used
     container_name: tailscale-shoko # Name for local container management
@@ -236,6 +212,30 @@ services:
       retries: 3 # Number of retries before marking as unhealthy
       start_period: 10s # Time to wait before starting health checks
     restart: always
+
+  shoko_server:
+    shm_size: 256m
+    container_name: shoko_server
+    image: ghcr.io/shokoanime/server:latest
+    restart: always
+    # labels:
+    #   tsdproxy.enable: "true"
+    #   tsdproxy.name: "shoko"
+    #   tsdproxy.container_port: "8111"
+    environment:
+      - "PUID=568"
+      - "PGID=568"
+      - "TZ=${TZ}"
+    # ports:
+    #   - "8111:8111"
+    volumes:
+      - "${APPCONFIG_DIR}/Shoko:/home/shoko/.shoko"
+      - "${MEDIA_DIR}/Media/Anime:/mnt/anime-shows"
+      - "${MEDIA_DIR}/Media/Anime Movies:/mnt/anime-movies"
+    network_mode: service:tailscale-shoko # Sidecar configuration to route Jellyfin through Tailscale
+    depends_on:
+      tailscale-shoko:
+        condition: service_healthy
 
 ######################### KAVITA AND TAILSCALE #########################
   kavita:
