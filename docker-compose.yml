@@ -9,6 +9,8 @@ networks:
 ## App Data: ${APPCONFIG_DIR}
 ## Media path: ${MEDIA_DIR}/Media
 ## Downloads path: ${MEDIA_DIR}/Downloads
+## Alt Download Path: ${SECOND_MEDIA_DIR}/Downloads
+## Alt Media path: ${SECOND_MEDIA_DIR}/Media
 
 # Ports and IP
 # Jellyfin: 172.18.0.9
@@ -41,6 +43,7 @@ services:
     volumes:
       - ${APPCONFIG_DIR}/Jellyfin:/config
       - ${MEDIA_DIR}/Media:/data/media
+      - ${SECOND_MEDIA_DIR}/Media:/data/media2
     # labels:
     #   tsdproxy.enable: "true"
     #   tsdproxy.name: "jellyfin"
@@ -274,6 +277,7 @@ services:
     volumes:
       - "${APPCONFIG_DIR}/Shoko:/home/shoko/.shoko"
       - "${MEDIA_DIR}:/mnt/media"
+      - "${SECOND_MEDIA_DIR}/Media:/mnt/media2"
     network_mode: service:tailscale-shoko # Sidecar configuration to route Jellyfin through Tailscale
     depends_on:
       tailscale-shoko:
@@ -322,6 +326,7 @@ services:
     container_name: kavita
     volumes:
         - ${MEDIA_DIR}/Media:/data
+        - ${SECOND_MEDIA_DIR}/Media:/data2
         - ${APPCONFIG_DIR}/Kavita/config:/kavita/config     # /kavita/config must not be changed
     environment:
         - TZ=${TZ}
