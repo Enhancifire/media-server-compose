@@ -43,7 +43,7 @@ services:
     volumes:
       - ${APPCONFIG_DIR}/Jellyfin:/config
       - ${MEDIA_DIR}/Media:/data/media
-      - ${SECOND_MEDIA_DIR}/Media:/data/media2
+      - ${SECOND_MEDIA_DIR}:/data/alt-media
     # labels:
     #   tsdproxy.enable: "true"
     #   tsdproxy.name: "jellyfin"
@@ -269,15 +269,15 @@ services:
     #   tsdproxy.name: "shoko"
     #   tsdproxy.container_port: "8111"
     environment:
-      - PUID=0
-      - PGID=0
+      - PUID=568
+      - PGID=568
       - TZ=${TZ}
     # ports:
     #   - "8111:8111"
     volumes:
       - "${APPCONFIG_DIR}/Shoko:/home/shoko/.shoko"
       - "${MEDIA_DIR}:/mnt/media"
-      - "${SECOND_MEDIA_DIR}/Media:/mnt/media2"
+      - "${SECOND_MEDIA_DIR}:/mnt/alt-media"
     network_mode: service:tailscale-shoko # Sidecar configuration to route Jellyfin through Tailscale
     depends_on:
       tailscale-shoko:
@@ -326,7 +326,7 @@ services:
     container_name: kavita
     volumes:
         - ${MEDIA_DIR}/Media:/data
-        - ${SECOND_MEDIA_DIR}/Media:/data2
+        - ${SECOND_MEDIA_DIR}/Media:/data-alt
         - ${APPCONFIG_DIR}/Kavita/config:/kavita/config     # /kavita/config must not be changed
     environment:
         - TZ=${TZ}
