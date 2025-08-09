@@ -206,7 +206,7 @@ services:
       - TORRENTING_PORT=6881
     volumes:
       - ${APPCONFIG_DIR}/QBittorrent:/config
-      - ${MEDIA_DIR}/Downloads/Torrents:/downloads #optional
+      - ${SECOND_MEDIA_DIR}/Downloads/Torrents:/downloads #optional
     # ports:
     #   - 8080:8080
     #   - 6882:6881
