@@ -471,8 +471,8 @@ services:
       - TZ=${TZ}
     volumes:
       - ${APPCONFIG_DIR}/mylar3/config:/config
-      - ${SECOND_MEDIA_DIR}/Media/Comics:/media/comics
-      - ${SECOND_MEDIA_DIR}/Downloads:/media/downloads
+      - ${SECOND_MEDIA_DIR}/Media/Comics:/comics
+      - ${SECOND_MEDIA_DIR}/Downloads:/downloads
       
     # labels:
     #       tsdproxy.enable: "true"
