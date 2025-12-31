@@ -28,6 +28,8 @@ networks:
 # - 8080:8080
 # - 6882:6881
 # - 6882:6881/udp
+# Mylar3
+# - 
 
 services:
 
@@ -418,3 +420,69 @@ services:
 #       type: none
 #       device: ${MEDIA_DIR}
 #       o: bind
+
+  
+  tailscale-mylar3:
+    image: tailscale/tailscale:latest # Image to be used
+    container_name: tailscale-mylar3 # Name for local container management
+    hostname: mylar3 # Name used within your Tailscale environment
+    ports:
+      - "8090:8090"
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_SERVE_CONFIG=/config/serve.json # Tailsacale Serve configuration to expose the web interface on your local Tailnet - remove this line if not required
+      - TS_USERSPACE=false
+      - TS_ENABLE_HEALTH_CHECK=true              # Enable healthcheck endpoint: "/healthz"
+      - TS_LOCAL_ADDR_PORT=127.0.0.1:41234       # The <addr>:<port> for the healthz endpoint
+      - PUID=568
+      - PGID=568
+      #- TS_ACCEPT_DNS=true # Uncomment when using MagicDNS
+    volumes:
+      - ${APPCONFIG_DIR}/mylar3/ts-config:/config # Config folder used to store Tailscale files - you may need to change the path
+      - ${APPCONFIG_DIR}/mylar3/ts/state:/var/lib/tailscale # Tailscale requirement - you may need to change the path
+    devices:
+      - /dev/net/tun:/dev/net/tun # Network configuration for Tailscale to work
+    cap_add:
+      - net_admin # Tailscale requirement
+      - sys_module # Tailscale requirement
+    #ports:
+    #  - 0.0.0.0:${SERVICEPORT}:${SERVICEPORT} # Binding port ${SERVICE}PORT to the local network - may be removed if only exposure to your Tailnet is required
+    # If any DNS issues arise, use your preferred DNS provider by uncommenting the config below
+    # dns: 
+    #   - ${DNS_SERVER}
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:41234/healthz"] # Check Tailscale has a Tailnet IP and is operational
+      interval: 1m # How often to perform the check
+      timeout: 10s # Time to wait for the check to succeed
+      retries: 3 # Number of retries before marking as unhealthy
+      start_period: 10s # Time to wait before starting health checks
+    restart: always
+
+
+  mylar3:
+    image: lscr.io/linuxserver/mylar3:latest
+    container_name: mylar3
+    environment:
+      # Only change these if you know what you're doing
+      - PUID=568
+      - PGID=568
+      # Edit to match your current timezone https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+      - TZ=${TZ}
+    volumes:
+      - ${APPCONFIG_DIR}/mylar3/config:/config
+      - ${SECOND_MEDIA_DIR}/Media/Comics:/media/comics
+      - ${SECOND_MEDIA_DIR}/Downloads:/media/downloads
+      
+    # labels:
+    #       tsdproxy.enable: "true"
+    #       tsdproxy.name: "cwa"
+    #       tsdproxy.container_port: "8083"
+    # ports:
+    #   # Change the first number to change the port you want to access the Web UI, not the second
+    #   - 8083:8083
+    restart: unless-stopped
+    network_mode: service:tailscale-mylar3 # Sidecar configuration to route Jellyfin through Tailscale
+    depends_on:
+      tailscale-mylar3:
+        condition: service_healthy
