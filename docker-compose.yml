@@ -486,3 +486,56 @@ services:
     depends_on:
       tailscale-mylar3:
         condition: service_healthy
+
+  tailscale-kapowarr:
+    image: tailscale/tailscale:latest # Image to be used
+    container_name: tailscale-kapowarr # Name for local container management
+    hostname: kapowarr # Name used within your Tailscale environment
+    ports:
+      - "5656:5656"
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_SERVE_CONFIG=/config/serve.json # Tailsacale Serve configuration to expose the web interface on your local Tailnet - remove this line if not required
+      - TS_USERSPACE=false
+      - TS_ENABLE_HEALTH_CHECK=true              # Enable healthcheck endpoint: "/healthz"
+      - TS_LOCAL_ADDR_PORT=127.0.0.1:41234       # The <addr>:<port> for the healthz endpoint
+      - PUID=568
+      - PGID=568
+      #- TS_ACCEPT_DNS=true # Uncomment when using MagicDNS
+    volumes:
+      - ${APPCONFIG_DIR}/kapowarr/ts-config:/config # Config folder used to store Tailscale files - you may need to change the path
+      - ${APPCONFIG_DIR}/kapowarr/ts/state:/var/lib/tailscale # Tailscale requirement - you may need to change the path
+    devices:
+      - /dev/net/tun:/dev/net/tun # Network configuration for Tailscale to work
+    cap_add:
+      - net_admin # Tailscale requirement
+      - sys_module # Tailscale requirement
+    #ports:
+    #  - 0.0.0.0:${SERVICEPORT}:${SERVICEPORT} # Binding port ${SERVICE}PORT to the local network - may be removed if only exposure to your Tailnet is required
+    # If any DNS issues arise, use your preferred DNS provider by uncommenting the config below
+    # dns: 
+    #   - ${DNS_SERVER}
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:41234/healthz"] # Check Tailscale has a Tailnet IP and is operational
+      interval: 1m # How often to perform the check
+      timeout: 10s # Time to wait for the check to succeed
+      retries: 3 # Number of retries before marking as unhealthy
+      start_period: 10s # Time to wait before starting health checks
+    restart: always
+
+  kapowarr:
+    container_name: kapowarr
+    image: mrcas/kapowarr:latest
+    volumes:
+      - "${APPCONFIG_DIR}/kapowarr/config:/app/db"
+      - "${SECOND_MEDIA_DIR}/Downloads:/app/temp_downloads"
+      - "${SECOND_MEDIA_DIR}/Media/Comics:/comics-1"
+    environment:
+      - PUID=568
+      - PGID=568
+    restart: unless-stopped
+    network_mode: service:tailscale-kapowarr # Sidecar configuration to route Jellyfin through Tailscale
+    depends_on:
+      tailscale-kapowarr:
+        condition: service_healthy
